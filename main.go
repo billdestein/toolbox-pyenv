@@ -30,20 +30,19 @@ type Builder struct {
 
 func (this Builder) build() {
   repoDir, _ :=  filepath.Abs(filepath.Dir(os.Args[0]))
-  pyenvDir := path.Join(repoDir, "pyenv")
-  homebrewDir := path.Join(pyenvDir, "homebrew")
+  homebrewDir := path.Join(repoDir, "homebrew")
   homebrewFilepath := path.Join(homebrewDir, "bin", "brew")
   currentUser, _ := user.Current();
   homeDir := currentUser.HomeDir    
-  tarballDir := path.Join(homeDir, ".toolbox-tarballs")
-  tarballFilepath := path.Join(tarballDir, "pyenv.tgz")
+  tarballDir := path.Join(homeDir, "toolbox-tarballs")
+  tarballFilepath := path.Join(tarballDir, "toolbox-pyenv.tgz")
 
-  // If the pyenv directory exists, remove it
-  _, err := os.Stat(pyenvDir)
+  // If the homebrew directory exists, remove it
+  _, err := os.Stat(homebrewDir)
   if !os.IsNotExist(err) {
-    os.RemoveAll(pyenvDir)
+    os.RemoveAll(homebrewDir)
     if err != nil {
-      fmt.Printf("Error removing pyenv directory. %s\n", err.Error())
+      fmt.Printf("Error removing homebrew directory. %s\n", err.Error())
       os.Exit(1)
     }
   }
@@ -90,7 +89,7 @@ func (this Builder) build() {
   }
 
   // Brew install pyenv
-  homebrewCommand = fmt.Sprintf("%s install %s", homebrewFilepath, "pyenv")
+  homebrewCommand = fmt.Sprintf("%s install %s", homebrewFilepath, "pyenv@1.2.20")
   bashCommand = exec.Command("bash", "-c", homebrewCommand)
   stderr, _ = bashCommand.StderrPipe()
   bashCommand.Start()
@@ -103,7 +102,25 @@ func (this Builder) build() {
   }
   err = bashCommand.Wait()
   if err != nil {
-    fmt.Printf("Error running 'brew install'. %s\n", err.Error())
+    fmt.Printf("Error running 'brew install pyenv'. %s\n", err.Error())
+    os.Exit(1)
+  }
+
+  // Brew install pyenv-virtualenv
+  homebrewCommand = fmt.Sprintf("%s install %s", homebrewFilepath, "pyenv-virtualenv@1.1.5")
+  bashCommand = exec.Command("bash", "-c", homebrewCommand)
+  stderr, _ = bashCommand.StderrPipe()
+  bashCommand.Start()
+
+  scanner = bufio.NewScanner(stderr)
+  scanner.Split(bufio.ScanLines)
+  for scanner.Scan() {
+    line := scanner.Text()
+    fmt.Printf("%s\n", line)
+  }
+  err = bashCommand.Wait()
+  if err != nil {
+    fmt.Printf("Error running 'brew install pyenv-virtualenv'. %s\n", err.Error())
     os.Exit(1)
   }
 
@@ -123,13 +140,13 @@ func (this Builder) build() {
     }
   }
 
-  // Tar the pgadmin directory
+  // Tar the pyenv directory
   parentDir := filepath.Dir(repoDir)
-  command := fmt.Sprintf("tar -C  %s -czf %s %s", parentDir, tarballFilepath, repoDir)
+  command := fmt.Sprintf("tar -C  %s -czf %s toolbox-pyenv", parentDir, tarballFilepath)
   fmt.Printf("command: '%s'\n", command)
   _, err = exec.Command("bash", "-c", command).Output()
   if err != nil {
-    fmt.Printf("error tarring pgadmin. %s\n", err.Error())
+    fmt.Printf("error tarring pyenv. %s\n", err.Error())
     os.Exit(1)
   }
 }
