@@ -89,7 +89,7 @@ func (this Builder) build() {
   }
 
   // Brew install pyenv
-  homebrewCommand = fmt.Sprintf("%s install %s", homebrewFilepath, "pyenv@1.2.20")
+  homebrewCommand = fmt.Sprintf("%s install %s", homebrewFilepath, "pyenv")
   bashCommand = exec.Command("bash", "-c", homebrewCommand)
   stderr, _ = bashCommand.StderrPipe()
   bashCommand.Start()
@@ -107,7 +107,7 @@ func (this Builder) build() {
   }
 
   // Brew install pyenv-virtualenv
-  homebrewCommand = fmt.Sprintf("%s install %s", homebrewFilepath, "pyenv-virtualenv@1.1.5")
+  homebrewCommand = fmt.Sprintf("%s install %s", homebrewFilepath, "pyenv-virtualenv")
   bashCommand = exec.Command("bash", "-c", homebrewCommand)
   stderr, _ = bashCommand.StderrPipe()
   bashCommand.Start()
